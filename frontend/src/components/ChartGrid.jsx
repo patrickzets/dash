@@ -15,20 +15,13 @@ export default function ChartGrid({ charts, onRemove, onUpdate, API, colors }) {
       </div>
     );
   }
-
+  const gridCols = charts.length === 1 ? "grid-cols-1" : charts.length === 2 ? "grid-cols-1 xl:grid-cols-2" : "grid-cols-1 md:grid-cols-2";
   return (
-    <div className={`p-4 grid gap-4 ${
-      charts.length === 1 ? "grid-cols-1" :
-      charts.length === 2 ? "grid-cols-1 xl:grid-cols-2" :
-      "grid-cols-1 md:grid-cols-2"
-    }`}>
+    <div className={`p-4 grid gap-4 ${gridCols}`}>
       {charts.map((chart) => (
-        <ChartCard
-          key={chart.id}
-          chart={chart}
+        <ChartCard key={chart.id} chart={chart} API={API}
           onRemove={() => onRemove(chart.id)}
-          onUpdate={(updates) => onUpdate(chart.id, updates)}
-          API={API}
+          onUpdate={(upd) => onUpdate(chart.id, upd)}
           color={colors[chart.colorIndex % colors.length]}
         />
       ))}

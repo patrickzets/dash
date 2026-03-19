@@ -9,20 +9,15 @@ import axios from "axios";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement, Filler, Tooltip, Legend, Title);
 
-const CHART_COLORS_PALETTE = [
-  "#3b82f6","#10b981","#f59e0b","#ef4444","#8b5cf6",
-  "#06b6d4","#f97316","#84cc16","#ec4899","#6366f1",
+const PALETTE = ["#3b82f6","#10b981","#f59e0b","#ef4444","#8b5cf6","#06b6d4","#f97316","#84cc16","#ec4899","#6366f1"];
+const CHART_TYPES = [
+  { value: "bar", label: "Barras" },
+  { value: "line", label: "Linha" },
+  { value: "pie", label: "Pizza" },
+  { value: "doughnut", label: "Rosca" },
+  { value: "area", label: "Área" },
 ];
-
-const CHART_TYPES = ["bar","line","pie","doughnut","area"];
-
-function generateColors(count, baseColor) {
-  const colors = [];
-  for (let i = 0; i < count; i++) {
-    colors.push(CHART_COLORS_PALETTE[i % CHART_COLORS_PALETTE.length]);
-  }
-  return colors;
-}
+const genColors = (n) => Array.from({ length: n }, (_, i) => PALETTE[i % PALETTE.length]);
 
 export default function ChartCard({ chart, onRemove, onUpdate, API, color }) {
   const [data, setData] = useState(null);
@@ -31,22 +26,15 @@ export default function ChartCard({ chart, onRemove, onUpdate, API, color }) {
   const chartRef = useRef(null);
 
   const fetchData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+    setLoading(true); setError(null);
     try {
-      const params = {
-        group_by: chart.group_by,
-        agg_func: chart.agg_func || "count",
-        limit: 30,
-      };
+      const params = { group_by: chart.group_by, agg_func: chart.agg_func || "count", limit: 30 };
       if (chart.value_col) params.value_col = chart.value_col;
       const res = await axios.get(`${API}/aggregate`, { params });
       setData(res.data);
     } catch (e) {
       setError(e.response?.data?.detail || "Erro ao carregar dados.");
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   }, [chart.group_by, chart.value_col, chart.agg_func, API]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
@@ -61,12 +49,11 @@ export default function ChartCard({ chart, onRemove, onUpdate, API, color }) {
   };
 
   const chartType = chart.chart_type === "area" ? "line" : chart.chart_type;
+  const isMultiColor = chartType === "pie" || chartType === "doughnut";
 
   const buildChartData = () => {
     if (!data) return null;
-    const colors = generateColors(data.labels.length, color);
-    const isMultiColor = chartType === "pie" || chartType === "doughnut";
-
+    const colors = genColors(data.labels.length);
     return {
       labels: data.labels,
       datasets: [{
@@ -88,7 +75,7 @@ export default function ChartCard({ chart, onRemove, onUpdate, API, color }) {
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        display: chartType === "pie" || chartType === "doughnut",
+        display: isMultiColor,
         position: "bottom",
         labels: { padding: 12, font: { size: 11 }, color: "#6b7280" },
       },
@@ -101,17 +88,9 @@ export default function ChartCard({ chart, onRemove, onUpdate, API, color }) {
         },
       },
     },
-    scales: chartType !== "pie" && chartType !== "doughnut" ? {
-      x: {
-        grid: { color: "rgba(107,114,128,0.1)" },
-        ticks: { color: "#9ca3af", maxRotation: 45, font: { size: 10 } },
-      },
-      y: {
-        grid: { color: "rgba(107,114,128,0.1)" },
-        ticks: { color: "#9ca3af", font: { size: 10 },
-          callback: (v) => typeof v === "number" ? v.toLocaleString("pt-BR") : v },
-        beginAtZero: true,
-      },
+    scales: !isMultiColor ? {
+      x: { grid: { color: "rgba(107,114,128,0.1)" }, ticks: { color: "#9ca3af", maxRotation: 45, font: { size: 10 } } },
+      y: { grid: { color: "rgba(107,114,128,0.1)" }, ticks: { color: "#9ca3af", font: { size: 10 }, callback: (v) => typeof v === "number" ? v.toLocaleString("pt-BR") : v }, beginAtZero: true },
     } : undefined,
   };
 
@@ -120,20 +99,12 @@ export default function ChartCard({ chart, onRemove, onUpdate, API, color }) {
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-      {/* Card header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate flex-1 pr-2">
-          {chart.title}
-        </h3>
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate flex-1 pr-2">{chart.title}</h3>
         <div className="flex items-center gap-1">
-          {/* Chart type switcher */}
-          <select
-            value={chart.chart_type}
-            onChange={(e) => onUpdate({ chart_type: e.target.value })}
+          <select value={chart.chart_type} onChange={(e) => onUpdate({ chart_type: e.target.value })}
             className="text-xs border border-gray-200 dark:border-gray-600 rounded-md px-1.5 py-1 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:outline-none">
-            {CHART_TYPES.map(t => (
-              <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
-            ))}
+            {CHART_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
           </select>
           <button onClick={handleExport} title="Exportar PNG"
             className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
@@ -149,8 +120,6 @@ export default function ChartCard({ chart, onRemove, onUpdate, API, color }) {
           </button>
         </div>
       </div>
-
-      {/* Chart body */}
       <div className="p-4" style={{ height: "280px" }}>
         {loading ? (
           <div className="h-full flex items-center justify-center">
@@ -167,8 +136,6 @@ export default function ChartCard({ chart, onRemove, onUpdate, API, color }) {
           <ChartComponent ref={chartRef} data={chartData} options={chartOptions} />
         ) : null}
       </div>
-
-      {/* Footer stats */}
       {data && (
         <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-700 flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
           <span>{data.total_groups} categorias únicas</span>
