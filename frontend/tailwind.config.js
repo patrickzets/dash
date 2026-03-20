@@ -12,6 +12,13 @@ module.exports = {
           600: "#2563eb",
           700: "#1d4ed8",
         },
+        turquesa: "#67D6C2",
+        periwinkle: "#796DD6",
+        crimson: "#D9143E",
+        gray: {
+          850: "#1a1830",
+          950: "#0f0e17",
+        },
       },
     },
   },

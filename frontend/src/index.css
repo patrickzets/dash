@@ -1,13 +1,101 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+/* ── Variáveis de cor ─────────────────────────────── */
+:root {
+  --turquesa:  #67D6C2;
+  --periwinkle:#796DD6;
+  --crimson:   #D9143E;
+  --cinza-f:   #ACB8CE;
+  --cinza-c:   #EAEFF5;
 }
 
-.scrollbar-thin::-webkit-scrollbar { width: 6px; }
-.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
-.scrollbar-thin::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-.dark .scrollbar-thin::-webkit-scrollbar-thumb { background: #475569; }
+/* ── Base ─────────────────────────────────────────── */
+body {
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Background ───────────────────────────────────── */
+.bg-surface {
+  background-color: var(--cinza-c);
+}
+.dark .bg-surface {
+  background-color: #0f0e17;
+}
+
+/* ── Header gradient ──────────────────────────────── */
+.header-gradient {
+  background: linear-gradient(135deg, #796DD6 0%, #67D6C2 60%, #796DD6 100%);
+  background-size: 200% 200%;
+  animation: gradientShift 8s ease infinite;
+}
+
+@keyframes gradientShift {
+  0%   { background-position: 0%   50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0%   50%; }
+}
+
+.header-orb {
+  background: radial-gradient(ellipse at 80% 50%, rgba(255,255,255,0.18) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ── Scrollbar ────────────────────────────────────── */
+.scrollbar-thin::-webkit-scrollbar        { width: 5px; height: 5px; }
+.scrollbar-thin::-webkit-scrollbar-track  { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb  { background: #CBD5E1; border-radius: 9999px; }
+.dark .scrollbar-thin::-webkit-scrollbar-thumb { background: #374151; }
+
+/* ── Card chart hover ─────────────────────────────── */
+.chart-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.chart-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(121,109,214,0.15), 0 2px 8px rgba(0,0,0,0.06);
+}
+.dark .chart-card {
+  background-color: #1a1830;
+  border-color: rgba(255,255,255,0.06);
+}
+
+/* ── Sidebar ─────────────────────────────────────── */
+.dark aside {
+  background-color: #13121f;
+  border-color: rgba(255,255,255,0.05);
+}
+
+/* ── Gray 850 (missing from Tailwind) ────────────── */
+.dark\:bg-gray-850 {
+  background-color: #1a1830;
+}
+
+/* ── Botão "Baixar Todos" pulse glow ─────────────── */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(121,109,214,0.4); }
+  50%       { box-shadow: 0 4px 28px rgba(103,214,194,0.5); }
+}
+button[title="Baixar todos os gráficos como imagem"] {
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
+/* ── Focus ring personalizado ───────────────────── */
+select:focus, input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--periwinkle);
+}
+
+/* ── Animação de entrada dos cards ──────────────── */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.chart-card {
+  animation: slideUp 0.35s ease both;
+}
